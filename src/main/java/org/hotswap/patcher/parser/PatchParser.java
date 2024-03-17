@@ -46,23 +46,20 @@ public class PatchParser {
         }
     }
 
-    private final String file;
     private String content;
     private int line;
     private int pos;
     private int end;
     private Character cha;
 
-    public PatchParser(String file) {
-        this.file = file;
+    public PatchParser() {
     }
 
-    public List<ClassPatch> parse() {
+    public List<ClassPatch> parseFile(String file) {
         try {
             Path filePath = Paths.get(file);
             if (Files.exists(filePath) && !Files.isRegularFile(filePath)) {
-                content = Files.readString(filePath);
-                return parsePatch();
+                return parse(Files.readString(filePath));
             } else {
                 LOGGER.error("Patch file {} does not exists!", file);
             }
@@ -72,11 +69,21 @@ public class PatchParser {
         return List.of();
     }
 
-    private List<ClassPatch> parsePatch() {
-        List<ClassPatch> result = new ArrayList<>();
+    public List<ClassPatch> parse(String content) {
+        this.content = content;
+        return parsePatch();
+    }
+
+    private void init() {
         pos = 0;
         end = content.length();
         line = 1;
+        cha = null;
+    }
+
+    private List<ClassPatch> parsePatch() {
+        List<ClassPatch> result = new ArrayList<>();
+        init();
         try {
             while (pos < end) {
                 readExpectKeyword("class");
@@ -157,7 +164,38 @@ public class PatchParser {
     }
 
     private String readPatchFragmentBody() {
-        return "";
+        int parCount = 1;
+        boolean inComment = false;
+        char prevChar = '{';
+        StringBuilder result = new StringBuilder();
+        while (true) {
+            Character c = readChar();
+            if (c == null) {
+                break;
+            }
+            if (c == '/' && nextCharMatch('*')) {
+                inComment = true;
+            } else if (inComment && c == '/' && prevChar == '*') {
+                inComment = false;
+            } else {
+                if (!inComment) {
+                    if (c == '{') {
+                        parCount++;
+                    }
+                    if (c == '}') {
+                        parCount--;
+                        if (parCount == 0) {
+                            undoRead();
+                            break;
+                        }
+                    }
+                    result.append(c);
+                }
+            }
+            prevChar = c;
+        }
+
+        return result.toString();
     }
 
     private void readExpectKeyword(String keyword) throws ParseException {
@@ -239,7 +277,7 @@ public class PatchParser {
         if (skipWsBefore) {
             skipWs();
         }
-        if (isEnd() || !readChar().equals(cha)) {
+        if (isEnd() || !readChar().equals(expectChar)) {
             throw new ParseException("Character \"" + expectChar + "\" expected.");
         }
     }
@@ -270,4 +308,9 @@ public class PatchParser {
         }
         return null;
     }
+
+    private void undoRead() {
+        pos--;
+    }
+
 }
