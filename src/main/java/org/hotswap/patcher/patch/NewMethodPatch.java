@@ -1,5 +1,8 @@
 package org.hotswap.patcher.patch;
 
+/**
+ * The type New method patch.
+ */
 public class NewMethodPatch {
     private String addMethodPatch;
 
@@ -9,5 +12,12 @@ public class NewMethodPatch {
 
     public void setAddMethodPatch(String addMethodPatch) {
         this.addMethodPatch = addMethodPatch;
+    }
+
+    @Override
+    public String toString() {
+        return "NewMethodPatch{" +
+                "addMethodPatch='" + addMethodPatch + '\'' +
+                '}';
     }
 }

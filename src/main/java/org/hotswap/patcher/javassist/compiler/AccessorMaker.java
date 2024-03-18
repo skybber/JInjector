@@ -42,7 +42,7 @@ public class AccessorMaker {
     private int uniqueNumber;
     private Map<String,Object> accessors;
 
-    static final String lastParamType = "org.hotswap.agent.javassist.runtime.Inner";
+    static final String lastParamType = "org.hotswap.patcher.javassist.runtime.Inner";
 
     public AccessorMaker(CtClass c) {
         clazz = c;

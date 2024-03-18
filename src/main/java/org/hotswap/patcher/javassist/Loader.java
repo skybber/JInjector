@@ -233,7 +233,7 @@ public class Loader extends ClassLoader {
         source = cp;
         translator = null;
         domain = null;
-        delegateLoadingOf("org.hotswap.agent.javassist.Loader");
+        delegateLoadingOf("org.hotswap.patcher.javassist.Loader");
     }
 
     /**

@@ -30,6 +30,7 @@ import java.util.Collection;
 import org.hotswap.patcher.javassist.bytecode.ClassFile;
 import org.hotswap.patcher.javassist.bytecode.Descriptor;
 import org.hotswap.patcher.javassist.bytecode.Opcode;
+import org.hotswap.patcher.javassist.compiler.AccessorMaker;
 import org.hotswap.patcher.javassist.expr.ExprEditor;
 
 /* Note:
@@ -256,7 +257,7 @@ public abstract class CtClass {
     /**
      * Undocumented method.  Do not use; internal-use only.
      */
-    public org.hotswap.agent.javassist.compiler.AccessorMaker getAccessorMaker() {
+    public AccessorMaker getAccessorMaker() {
         return null;
     }
 

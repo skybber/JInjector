@@ -778,7 +778,7 @@ class CtClassType extends CtClass {
             catch (ClassNotFoundException e2){
                 try {
                     Class<?> clazz = cp.get(anno.getTypeName()).toClass();
-                    return org.hotswap.agent.javassist.bytecode.annotation.AnnotationImpl.make(
+                    return org.hotswap.patcher.javassist.bytecode.annotation.AnnotationImpl.make(
                                             clazz.getClassLoader(),
                                             clazz, cp, anno);
                 }

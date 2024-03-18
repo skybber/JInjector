@@ -237,7 +237,7 @@ public class ProxyFactory {
     private static final String FILTER_SIGNATURE_FIELD = "_filter_signature";
     private static final String FILTER_SIGNATURE_TYPE = "[B";
     private static final String HANDLER = "handler";
-    private static final String NULL_INTERCEPTOR_HOLDER = "org.hotswap.agent.javassist.util.proxy.RuntimeSupport";
+    private static final String NULL_INTERCEPTOR_HOLDER = "org.hotswap.patcher.javassist.util.proxy.RuntimeSupport";
     private static final String DEFAULT_INTERCEPTOR = "default_interceptor";
     private static final String HANDLER_TYPE
         = 'L' + MethodHandler.class.getName().replace('.', '/') + ';';
@@ -622,7 +622,7 @@ public class ProxyFactory {
      * {@code java.lang.invoke.MethodHandles.Lookup}.
      */
     private Class<?> getClassInTheSamePackage() {
-        if (basename.startsWith("org.hotswap.agent.javassist.util.proxy."))       // maybe the super class is java.*
+        if (basename.startsWith("org.hotswap.patcher.javassist.util.proxy."))       // maybe the super class is java.*
             return this.getClass();
         else if (superClass != null && superClass != OBJECT_TYPE)
             return superClass;
@@ -922,7 +922,7 @@ public class ProxyFactory {
             throw new RuntimeException(superName + " is final");
 
         if (basename.startsWith("java.") || basename.startsWith("jdk.") || onlyPublicMethods)
-            basename = "org.hotswap.agent.javassist.util.proxy." + basename.replace('.', '_');
+            basename = "org.hotswap.patcher.javassist.util.proxy." + basename.replace('.', '_');
     }
 
     private void allocateClassName() {
@@ -1587,7 +1587,7 @@ public class ProxyFactory {
         minfo.setExceptionsAttribute(ea);
         Bytecode code = new Bytecode(cp, 0, 1);
         code.addAload(0);
-        code.addInvokestatic("org.hotswap.agent.javassist.util.proxy.RuntimeSupport",
+        code.addInvokestatic("org.hotswap.patcher.javassist.util.proxy.RuntimeSupport",
                              "makeSerializedProxy",
                              "(Ljava/lang/Object;)Lorg/hotswap/agent/javassist/util/proxy/SerializedProxy;");
         code.addOpcode(Opcode.ARETURN);

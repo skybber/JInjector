@@ -276,7 +276,7 @@ public class JvstCodeGen extends MemberCodeGen {
 
         bytecode.addGetstatic((String)names[0], (String)names[1],
                               "Lorg/hotswap/agent/javassist/runtime/Cflow;");
-        bytecode.addInvokevirtual("org.hotswap.agent.javassist.runtime.Cflow",
+        bytecode.addInvokevirtual("org.hotswap.patcher.javassist.runtime.Cflow",
                                   "value", "()I");
         exprType = INT;
         arrayDim = 0;

@@ -102,12 +102,12 @@ public class Compiler {
                 String metaobj, classobj;
 
                 if (entries[i].metaobject == null)
-                    metaobj = "org.hotswap.agent.javassist.tools.reflect.Metaobject";
+                    metaobj = "org.hotswap.patcher.javassist.tools.reflect.Metaobject";
                 else
                     metaobj = entries[i].metaobject;
 
                 if (entries[i].classobject == null)
-                    classobj = "org.hotswap.agent.javassist.tools.reflect.ClassMetaobject";
+                    classobj = "org.hotswap.patcher.javassist.tools.reflect.ClassMetaobject";
                 else
                     classobj = entries[i].classobject;
 

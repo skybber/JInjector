@@ -12,20 +12,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.*;
 
-/*
-class org.hotswap.patcher.parser.Patcher {
-parse(*) {
-  insertBefore {
-  }
-  insertAfter {
-  }
-}
-
-@OnResourceFileEvent(path="/", filter="*.properties") {
-  call("java.util.ResourceBundle.clearCache()");
-}
-*/
-
+/**
+ * The type Patch parser.
+ */
 public class PatchParser {
     private static AgentLogger LOGGER = AgentLogger.getLogger(HotswapPatcher.class);
 
@@ -46,30 +35,35 @@ public class PatchParser {
         }
     }
 
+    private String fileName;
     private String content;
     private int line;
     private int pos;
     private int end;
-    private Character cha;
 
     public PatchParser() {
     }
 
-    public List<ClassPatch> parseFile(String file) {
+    public List<ClassPatch> parseFile(String fileName) {
         try {
-            Path filePath = Paths.get(file);
-            if (Files.exists(filePath) && !Files.isRegularFile(filePath)) {
-                return parse(Files.readString(filePath));
+            Path filePath = Paths.get(fileName);
+            if (Files.exists(filePath) && Files.isRegularFile(filePath)) {
+                this.fileName = fileName;
+                return doParse(Files.readString(filePath));
             } else {
-                LOGGER.error("Patch file {} does not exists!", file);
+                LOGGER.error("Patch file {} does not exists!", fileName);
             }
         } catch (IOException e) {
             LOGGER.error("IO exception. {}", e);
         }
-        return List.of();
+        return null;
     }
 
     public List<ClassPatch> parse(String content) {
+        fileName = null;
+       return doParse(content);
+    }
+    public List<ClassPatch> doParse(String content) {
         this.content = content;
         return parsePatch();
     }
@@ -78,7 +72,6 @@ public class PatchParser {
         pos = 0;
         end = content.length();
         line = 1;
-        cha = null;
     }
 
     private List<ClassPatch> parsePatch() {
@@ -94,71 +87,80 @@ public class PatchParser {
                 parseClassBody(classPatch);
                 readExpectChar('}');
                 result.add(classPatch);
+                skipWs();
             }
             return result;
         } catch (ParseException e) {
+            if (fileName != null) {
+                LOGGER.error("Patch file `{}` parse error. Line: {} : {}", fileName, line, e.getMessage());
+            } else {
+                LOGGER.error("Parse error. Line: {} : {}", line, e.getMessage());
+            }
         }
         return null;
     }
 
     private void parseClassBody(ClassPatch classPatch) throws ParseException {
         while (true) {
-            String methodName = readIdentif(true);
+            String methodName = readIdentif();
             if (methodName.isEmpty()) {
                 return;
             }
             readExpectChar('(');
             skipWs();
             boolean allMethods = false;
-            List<MethodPatch.MethodParam> params = null;
+            List<String> paramClasses = null;
             if (nextCharMatch('*')) {
-                nextChar();
+                readChar();
                 readExpectChar(')');
                 allMethods = true;
             } else {
+                paramClasses = new ArrayList<>();
                 if (!nextCharMatch(')')) {
-                    params = new ArrayList<>();
                     while (true) {
                         String paramClassName = readClassName();
-                        skipWs();
-                        boolean isArray = false;
                         if (nextCharMatch('[')) {
-                            nextChar();
+                            readChar();
                             readExpectChar(']');
-                            isArray = true;
                         }
-                        params.add(new MethodPatch.MethodParam(paramClassName, isArray));
+                        paramClasses.add(paramClassName);
                         if (nextCharMatch(')')) {
-                            nextChar();
+                            readChar();
                             break;
                         }
                         readExpectChar(',');
                     }
                 } else {
-                   nextChar();
+                   readChar();
                 }
             }
             readExpectChar('{');
-            MethodPatch methodPatch = new MethodPatch(methodName, allMethods, params);
+            MethodPatch methodPatch = new MethodPatch(methodName, allMethods, paramClasses);
             parseMethodBody(methodPatch);
             classPatch.addMethodPatch(methodPatch);
+            readExpectChar('}');
         }
     }
 
     private void parseMethodBody(MethodPatch methodPatch) throws ParseException {
         while (true) {
-            String strTransformType = readIdentif(true);
-            if (strTransformType.isEmpty()) {
+            skipWs();
+            if (nextCharMatch('}')) {
                 return;
+            }
+            String strTransformType = readIdentif();
+            if (strTransformType.isEmpty()) {
+                throw new ParseException("Transform type expected.");
             }
             MethodPatchFragment.TransformType transformType = methodTransformTypes.get(strTransformType);
             if (transformType == null) {
-                throw new ParseException("Invalid method transformer \"" + strTransformType + "\".");
+                throw new ParseException("Invalid transform type\"" + strTransformType + "\".");
             }
             readExpectChar('{');
-            String patchFragmentBody = readPatchFragmentBody();
-            MethodPatchFragment patchFragment = new MethodPatchFragment(transformType, patchFragmentBody);
-            methodPatch.addPatchFragment(patchFragment);
+            String patchFragmentBody = trimEmptyLines(readPatchFragmentBody()).trim();
+            if (!patchFragmentBody.isEmpty()) {
+                methodPatch.addPatchFragment(new MethodPatchFragment(transformType, patchFragmentBody));
+            }
             readExpectChar('}');
         }
     }
@@ -199,7 +201,7 @@ public class PatchParser {
     }
 
     private void readExpectKeyword(String keyword) throws ParseException {
-        String ident = readIdentif(true);
+        String ident = readIdentif();
         if (!keyword.equals(ident)) {
             throw new ParseException("Keyword \"" + keyword + "\" expected.");
         }
@@ -216,6 +218,7 @@ public class PatchParser {
             className.append(identif);
             Character c = readChar();
             if (c == null || !c.equals('.')) {
+                undoRead();
                 break;
             }
             className.append(c);
@@ -231,42 +234,38 @@ public class PatchParser {
         return result;
     }
 
+    private String readIdentif() {
+        return readIdentif(true);
+    }
+
     private String readIdentif(boolean skipWsBefore) {
         if (skipWsBefore) {
             skipWs();
         }
         int start = pos;
-        while (readChar() != null && isAlphanumeric()) {}
+        while (isAlphanumeric(peekNextChar())) { readChar(); }
         return content.substring(start, pos);
     }
 
     private void skipWs() {
-        while (!isEnd() && isWhitespace(peekChar())) {
+        while (!isAtEnd() && isWhitespace(peekNextChar())) {
             readChar();
         }
     }
 
     private void readExpectWs() throws ParseException {
-        if (isEnd() || !isWhitespace()) {
+        if (!isWhitespace(readChar())) {
             throw new ParseException("Whitespace expected.");
         }
-        while (readChar() != null && isWhitespace()) {}
-    }
-
-    private boolean isWhitespace() {
-        return isWhitespace(cha);
+        while (isWhitespace(peekNextChar())) { readChar(); }
     }
 
     private boolean isWhitespace(Character c) {
         return Character.isWhitespace(c);
     }
 
-    private boolean isAlphanumeric() {
-        return Character.isLetter(cha) || Character.isDigit(cha);
-    }
-
-    private boolean isEnd() {
-        return pos >= end;
+    private boolean isAlphanumeric(Character c) {
+        return Character.isLetter(c) || Character.isDigit(c);
     }
 
     private void readExpectChar(char expectChar) throws ParseException {
@@ -277,40 +276,42 @@ public class PatchParser {
         if (skipWsBefore) {
             skipWs();
         }
-        if (isEnd() || !readChar().equals(expectChar)) {
+        if (isAtEnd() || !readChar().equals(expectChar)) {
             throw new ParseException("Character \"" + expectChar + "\" expected.");
         }
     }
 
-    private void nextChar() {
-        readChar();
+    private boolean isAtEnd() {
+        return pos >= end;
     }
 
     private Character readChar() {
-        if (!isEnd()) {
-           cha = content.charAt(pos++);
-           if (cha.equals('\n')) {
-               line ++;
-           }
-        } else {
-            cha = null;
+        Character result = null;
+        if (!isAtEnd()) {
+            result = content.charAt(pos++);
+            if (result.equals('\n')) {
+                line ++;
+            }
         }
-        return cha;
+        return result;
     }
 
     private boolean nextCharMatch(char c) {
-        return !isEnd() && content.charAt(pos) == c;
+        return !isAtEnd() && content.charAt(pos) == c;
     }
 
-    private Character peekChar() {
-        if (!isEnd()) {
-            return content.charAt(pos);
-        }
-        return null;
+    private Character peekNextChar() {
+        return !isAtEnd() ? content.charAt(pos) : null;
     }
 
     private void undoRead() {
-        pos--;
+        if (pos > 0) {
+            pos--;
+        }
     }
 
+    public static String trimEmptyLines(String text) {
+        return text.replaceAll("(?m)^\\s+", "")
+            .replaceAll("(?m)\\s+$", "");
+    }
 }

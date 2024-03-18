@@ -82,9 +82,9 @@ public class Reflection implements Translator {
     static final String readPrefix = "_r_";
     static final String writePrefix = "_w_";
 
-    static final String metaobjectClassName = "org.hotswap.agent.javassist.tools.reflect.Metaobject";
+    static final String metaobjectClassName = "org.hotswap.patcher.javassist.tools.reflect.Metaobject";
     static final String classMetaobjectClassName
-        = "org.hotswap.agenta.javassist.tools.reflect.ClassMetaobject";
+        = "org.hotswap.patchera.javassist.tools.reflect.ClassMetaobject";
 
     protected CtMethod trapMethod, trapStaticMethod;
     protected CtMethod trapRead, trapWrite;
@@ -117,9 +117,9 @@ public class Reflection implements Translator {
     public void start(ClassPool pool) throws NotFoundException {
         classPool = pool;
         final String msg
-            = "org.hotswap.agent.javassist.tools.reflect.Sample is not found or broken.";
+            = "org.hotswap.patcher.javassist.tools.reflect.Sample is not found or broken.";
         try {
-            CtClass c = classPool.get("org.hotswap.agenta.javassist.tools.reflect.Sample");
+            CtClass c = classPool.get("org.hotswap.patchera.javassist.tools.reflect.Sample");
             rebuildClassFile(c.getClassFile());
             trapMethod = c.getDeclaredMethod("trap");
             trapStaticMethod = c.getDeclaredMethod("trapStatic");
@@ -260,7 +260,7 @@ public class Reflection implements Translator {
             return false;       // this is already reflective.
         clazz.setAttribute("Reflective", new byte[0]);
 
-        CtClass mlevel = classPool.get("org.hotswap.agent.javassist.tools.reflect.Metalevel");
+        CtClass mlevel = classPool.get("org.hotswap.patcher.javassist.tools.reflect.Metalevel");
         boolean addMeta = !clazz.subtypeOf(mlevel);
         if (addMeta)
             clazz.addInterface(mlevel);
@@ -270,7 +270,7 @@ public class Reflection implements Translator {
 
         CtField f;
         if (addMeta) {
-            f = new CtField(classPool.get("org.hotswap.agent.javassist.tools.reflect.Metaobject"),
+            f = new CtField(classPool.get("org.hotswap.patcher.javassist.tools.reflect.Metaobject"),
                             metaobjectField, clazz);
             f.setModifiers(Modifier.PROTECTED);
             clazz.addField(f, CtField.Initializer.byNewWithParams(metaobject));
@@ -279,7 +279,7 @@ public class Reflection implements Translator {
             clazz.addMethod(CtNewMethod.setter(metaobjectSetter, f));
         }
 
-        f = new CtField(classPool.get("org.hotswap.agent.javassist.tools.reflect.ClassMetaobject"),
+        f = new CtField(classPool.get("org.hotswap.patcher.javassist.tools.reflect.ClassMetaobject"),
                         classobjectField, clazz);
         f.setModifiers(Modifier.PRIVATE | Modifier.STATIC);
         clazz.addField(f, CtField.Initializer.byNew(metaclass,

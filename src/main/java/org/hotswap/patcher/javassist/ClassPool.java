@@ -1147,7 +1147,7 @@ public class ClassPool {
         throws CannotCompileException
     {
         try {
-            return org.hotswap.agent.javassist.util.proxy.DefineClassHelper.toClass(neighbor,
+            return org.hotswap.patcher.javassist.util.proxy.DefineClassHelper.toClass(neighbor,
                                                             ct.toBytecode());
         }
         catch (IOException e) {
@@ -1173,7 +1173,7 @@ public class ClassPool {
         throws CannotCompileException
     {
         try {
-            return org.hotswap.agent.javassist.util.proxy.DefineClassHelper.toClass(lookup,
+            return org.hotswap.patcher.javassist.util.proxy.DefineClassHelper.toClass(lookup,
                                                             ct.toBytecode());
         }
         catch (IOException e) {
@@ -1229,7 +1229,7 @@ public class ClassPool {
             throws CannotCompileException
     {
         try {
-            return org.hotswap.agent.javassist.util.proxy.DefineClassHelper.toClass(ct.getName(),
+            return org.hotswap.patcher.javassist.util.proxy.DefineClassHelper.toClass(ct.getName(),
                     neighbor, loader, domain, ct.toBytecode());
         }
         catch (IOException e) {

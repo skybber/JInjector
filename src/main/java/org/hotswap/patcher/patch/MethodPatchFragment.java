@@ -1,5 +1,8 @@
 package org.hotswap.patcher.patch;
 
+/**
+ * The type Method patch fragment.
+ */
 public class MethodPatchFragment {
     public enum TransformType {
         INSERT_BEFORE,
@@ -20,5 +23,13 @@ public class MethodPatchFragment {
 
     public String getCode() {
         return code;
+    }
+
+    @Override
+    public String toString() {
+        return "MethodPatchFragment{" +
+                "transformType=" + transformType +
+                ", code='" + code + '\'' +
+                '}';
     }
 }

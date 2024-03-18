@@ -19,12 +19,17 @@
 package org.hotswap.patcher;
 
 import org.hotswap.patcher.logging.AgentLogger;
+import org.hotswap.patcher.parser.PatchParser;
+import org.hotswap.patcher.patch.ClassPatch;
 import org.hotswap.patcher.util.Version;
 
 import java.lang.instrument.Instrumentation;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * The type Hotswap patcher.
+ */
 public class HotswapPatcher {
     private static AgentLogger LOGGER = AgentLogger.getLogger(HotswapPatcher.class);
 
@@ -34,10 +39,24 @@ public class HotswapPatcher {
         premain(args, inst);
     }
 
-    public static void premain(String args, Instrumentation inst) {
-        LOGGER.info("Loading Hotswap patcher {{}} - runtime javassist class patching.", Version.version());
+    public static void premain(String args, Instrumentation instrumentation) {
+        LOGGER.info("Loading Hotswap Patcher {{}} - runtime javassist class patching.", Version.version());
         parseArgs(args);
-        LOGGER.debug("Hotswap agent initialized.");
+
+        PatcherTransformer transformer = new PatcherTransformer();
+        PatchParser parser = new PatchParser();
+        for (String patch: patches) {
+            List<ClassPatch> classPatches = parser.parseFile(patch);
+            if (classPatches != null) {
+                for (ClassPatch classPatch: classPatches) {
+                    LOGGER.info("Read classPatch {}", classPatch.toString());
+                    transformer.addClassPatch(classPatch);
+                }
+
+            }
+        }
+        instrumentation.addTransformer(transformer);
+        LOGGER.debug("Hotswap patcher initialized.");
     }
 
     public static void parseArgs(String args) {

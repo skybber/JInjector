@@ -1667,7 +1667,7 @@ public abstract class CodeGen extends Visitor implements Opcode, TokenId {
         */
 
         bytecode.growStack(1);
-        bytecode.addInvokestatic("org.hotswap.agent.javassist.runtime.DotClass", "fail",
+        bytecode.addInvokestatic("org.hotswap.patcher.javassist.runtime.DotClass", "fail",
                                  "(Ljava/lang/ClassNotFoundException;)"
                                  + "Ljava/lang/NoClassDefFoundError;");
         bytecode.addOpcode(ATHROW);

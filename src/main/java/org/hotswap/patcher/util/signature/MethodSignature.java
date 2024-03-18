@@ -2,6 +2,9 @@ package org.hotswap.patcher.util.signature;
 
 import org.hotswap.patcher.patch.MethodPatch;
 
+/**
+ * The type Method signature.
+ */
 public class MethodSignature {
     public static String getMethodSignature(MethodPatch methodPatch) {
         StringBuilder result = new StringBuilder();
@@ -10,12 +13,10 @@ public class MethodSignature {
         if (methodPatch.isAllMethods()) {
             result.append("*");
         } else {
-            if (methodPatch.getParams() != null && !methodPatch.getParams().isEmpty()) {
-                for (MethodPatch.MethodParam methodParam: methodPatch.getParams()) {
-                    result.append(methodParam.getClassName());
-                    if (methodParam.isArray()) {
-                        result.append("[]");
-                    }
+            if (!methodPatch.getParamClasses().isEmpty()) {
+                for (String paramClass: methodPatch.getParamClasses()) {
+                    result.append(paramClass);
+                    result.append(",");
                 }
                 result.setLength(result.length()-1);
             }

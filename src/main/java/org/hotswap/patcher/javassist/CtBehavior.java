@@ -580,7 +580,7 @@ public abstract class CtBehavior extends CtMember {
 
         pool.recordCflow(name, declaringClass.getName(), fname);
         try {
-            CtClass type = pool.get("org.hotswap.agent.javassist.runtime.Cflow");
+            CtClass type = pool.get("org.hotswap.patcher.javassist.runtime.Cflow");
             CtField field = new CtField(type, fname, cc);
             field.setModifiers(Modifier.PUBLIC | Modifier.STATIC);
             cc.addField(field, CtField.Initializer.byNew(type));
