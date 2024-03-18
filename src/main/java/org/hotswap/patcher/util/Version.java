@@ -23,7 +23,7 @@ import java.io.InputStream;
 import java.util.Properties;
 
 /**
- * Information about hotswap agent version.
+ * Information about hotswap patcher version.
  *
  * @author Jiri Bubnik
  */

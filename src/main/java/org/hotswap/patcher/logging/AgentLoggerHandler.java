@@ -47,7 +47,7 @@ public class AgentLoggerHandler {
 
     // print a message to System.out and optionally to custom stream
     protected void printMessage(String message) {
-        String log = "HOTSWAP AGENT: " + sdf.format(new Date()) +  " " + message;
+        String log = "HOTSWAP PATCHER: " + sdf.format(new Date()) +  " " + message;
         System.out.println(log);
         if (outputStream != null)
             outputStream.println(log);

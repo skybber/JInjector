@@ -24,6 +24,7 @@ import org.hotswap.patcher.patch.ClassPatch;
 import org.hotswap.patcher.util.Version;
 
 import java.lang.instrument.Instrumentation;
+import java.lang.instrument.UnmodifiableClassException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -45,17 +46,37 @@ public class HotswapPatcher {
 
         PatcherTransformer transformer = new PatcherTransformer();
         PatchParser parser = new PatchParser();
+        List<ClassPatch> allPatches = new ArrayList<>();
         for (String patch: patches) {
             List<ClassPatch> classPatches = parser.parseFile(patch);
             if (classPatches != null) {
                 for (ClassPatch classPatch: classPatches) {
                     LOGGER.info("Read classPatch {}", classPatch.toString());
                     transformer.addClassPatch(classPatch);
+                    allPatches.add(classPatch);
                 }
 
             }
         }
-        instrumentation.addTransformer(transformer);
+        instrumentation.addTransformer(transformer, true);
+
+        List<Class<?>> retransformClasses = new ArrayList<>();
+        for (ClassPatch classPatch: allPatches) {
+            try {
+                Class<?> clazz = Class.forName(classPatch.getClassName());
+                retransformClasses.add(clazz);
+            } catch (ClassNotFoundException ignore) {
+            }
+        }
+        if (!retransformClasses.isEmpty()) {
+            try {
+                LOGGER.error("Retransforming {}", retransformClasses);
+                instrumentation.retransformClasses(retransformClasses.toArray(new Class[retransformClasses.size()]));
+            } catch (UnmodifiableClassException e) {
+                LOGGER.error("Retransformation failed.", e);
+            }
+        }
+
         LOGGER.debug("Hotswap patcher initialized.");
     }
 
