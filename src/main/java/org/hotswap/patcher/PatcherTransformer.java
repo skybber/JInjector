@@ -21,6 +21,7 @@ package org.hotswap.patcher;
 import org.hotswap.patcher.javassist.*;
 import org.hotswap.patcher.logging.AgentLogger;
 import org.hotswap.patcher.patch.ClassPatch;
+import org.hotswap.patcher.patch.ConstructorPatch;
 import org.hotswap.patcher.patch.MethodPatch;
 import org.hotswap.patcher.patch.MethodPatchFragment;
 
@@ -50,15 +51,11 @@ public class PatcherTransformer implements ClassFileTransformer {
     public byte[] transform(final ClassLoader classLoader, String className, Class<?> redefiningClass,
                             final ProtectionDomain protectionDomain, byte[] bytes) throws IllegalClassFormatException {
 
-        if (redefiningClass != null) {
-            return bytes;
-        }
-
         byte[] result = bytes;
 
-        LOGGER.info("Transforming class= '{}'.", className);
         ClassPatch classPatch = patches.get(className);
         if (classPatch != null) {
+            LOGGER.info("Transforming class= '{}'.", className);
             ClassPool classPool = new ClassPool();
             CtClass ctClass = null;
             try {
@@ -70,6 +67,18 @@ public class PatcherTransformer implements ClassFileTransformer {
             }
             if (ctClass != null) {
                 try {
+                    for (List<ConstructorPatch> constructorPatchList : classPatch.getConstructorPatches().values()) {
+                        for (ConstructorPatch constructorPatch : constructorPatchList) {
+                            if (constructorPatch.getPatchFragments().isEmpty()) {
+                                continue;
+                            }
+                            if (constructorPatch.isAllMethods()) {
+                                applyAllConstructorPatch(classPool, ctClass, constructorPatch);
+                            } else {
+                                applyConstructorPatch(classPool, ctClass, constructorPatch);
+                            }
+                        }
+                    }
                     for (List<MethodPatch> methodPatchList : classPatch.getMethodPatches().values()) {
                         for (MethodPatch methodPatch : methodPatchList) {
                             if (methodPatch.getPatchFragments().isEmpty()) {
@@ -85,7 +94,7 @@ public class PatcherTransformer implements ClassFileTransformer {
                     result = ctClass.toBytecode();
                     ctClass.detach();
                 } catch (Exception e) {
-                    LOGGER.error("Patching failed for class '" + className + "'.", e);
+                    LOGGER.error("Patching class '" + className + "' failed.", e);
                 }
             }
         }
@@ -93,8 +102,29 @@ public class PatcherTransformer implements ClassFileTransformer {
         return result;
     }
 
+    private void applyAllConstructorPatch(ClassPool classPool, CtClass ctClass, ConstructorPatch constructorPatch) {
+        // TODO:
+    }
+
     private void applyAllMethodPatch(ClassPool classPool, CtClass ctClass, MethodPatch methodPatch) {
         // TODO:
+    }
+
+    private void applyConstructorPatch(ClassPool classPool, CtClass ctClass, ConstructorPatch constructorPatch) throws NotFoundException, CannotCompileException {
+        CtClass[] params = classNamesToCtClasses(classPool, constructorPatch.getParamClasses());
+        CtConstructor ctConstructor = ctClass.getDeclaredConstructor(params);
+        for (MethodPatchFragment patchFragment: constructorPatch.getPatchFragments()) {
+            switch (patchFragment.getTransformType()) {
+                case INSERT_BEFORE: {
+                    ctConstructor.insertBefore(patchFragment.getCode());
+                }
+                break;
+                case INSERT_AFTER: {
+                    ctConstructor.insertAfter(patchFragment.getCode());
+                }
+                break;
+            }
+        }
     }
 
     private void applyMethodPatch(ClassPool classPool, CtClass ctClass, MethodPatch methodPatch) throws NotFoundException, CannotCompileException {
