@@ -53,6 +53,9 @@ class java.util.ServiceLoader {
 }
 ```
 
+#### Example project
+
+Available at https://github.com/skybber/ServiceLoaderExample
 
 ## Installation
 
