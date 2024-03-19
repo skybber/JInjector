@@ -53,7 +53,7 @@ class java.util.ServiceLoader {
 }
 ```
 
-#### Example project
+### Example project
 
 Available at https://github.com/skybber/ServiceLoaderExample
 
