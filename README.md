@@ -1,5 +1,14 @@
 # HotswapPatcher
 
+<p align="left">
+    <a href="https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html">
+        <img src="https://img.shields.io/badge/License-GPL%20v2-blue.svg" alt="License: GPL v2">
+    </a>
+    <a href="https://twitter.com/intent/follow?screen_name=HSwapAgent">
+        <img src="https://img.shields.io/twitter/follow/HSwapAgent.svg?style=social&logo=twitter" alt="follow on Twitter">
+    </a>
+</p>
+
 ## Overview
 
 HotswapPatcher is a Java agent designed to facilitate the on-the-fly modification of Java classes using patch files in plain text format. 
