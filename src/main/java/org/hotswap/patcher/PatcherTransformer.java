@@ -123,6 +123,10 @@ public class PatcherTransformer implements ClassFileTransformer {
                     ctConstructor.insertAfter(patchFragment.getCode());
                 }
                 break;
+                case SET_BODY: {
+                    ctConstructor.setBody(patchFragment.getCode());
+                }
+                break;
             }
         }
     }
@@ -138,6 +142,10 @@ public class PatcherTransformer implements ClassFileTransformer {
                 break;
                 case INSERT_AFTER: {
                     ctMethod.insertAfter(patchFragment.getCode());
+                }
+                break;
+                case SET_BODY: {
+                    ctMethod.setBody(patchFragment.getCode());
                 }
                 break;
             }

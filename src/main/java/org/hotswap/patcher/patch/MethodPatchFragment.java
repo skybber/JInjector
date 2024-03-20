@@ -6,7 +6,8 @@ package org.hotswap.patcher.patch;
 public class MethodPatchFragment {
     public enum TransformType {
         INSERT_BEFORE,
-        INSERT_AFTER
+        INSERT_AFTER,
+        SET_BODY
     }
 
     private final TransformType transformType;

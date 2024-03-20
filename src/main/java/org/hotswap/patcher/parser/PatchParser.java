@@ -20,6 +20,7 @@ public class PatchParser {
 
     private static final String INSERT_BEFORE = "insertBefore";
     private static final String INSERT_AFTER = "insertAfter";
+    private static final String SET_BODY = "setBody";
 
     private static final Map<String, MethodPatchFragment.TransformType> methodTransformTypes;
 
@@ -27,6 +28,7 @@ public class PatchParser {
         methodTransformTypes = new HashMap<>();
         methodTransformTypes.put(INSERT_BEFORE, MethodPatchFragment.TransformType.INSERT_BEFORE);
         methodTransformTypes.put(INSERT_AFTER, MethodPatchFragment.TransformType.INSERT_AFTER);
+        methodTransformTypes.put(SET_BODY, MethodPatchFragment.TransformType.SET_BODY);
     }
     
     private class ParseException extends Exception {
