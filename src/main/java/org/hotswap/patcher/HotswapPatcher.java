@@ -18,6 +18,7 @@
  */
 package org.hotswap.patcher;
 
+import com.sun.tools.attach.VirtualMachine;
 import org.hotswap.patcher.logging.AgentLogger;
 import org.hotswap.patcher.parser.PatchParser;
 import org.hotswap.patcher.patch.Patch;
@@ -73,6 +74,19 @@ public class HotswapPatcher {
         }
 
         LOGGER.debug("Hotswap patcher initialized.");
+    }
+
+    public static void main(String[] args) throws Exception {
+        if (args.length < 1) {
+            System.out.println("Usage: java -jar hotswap-patcher.jar <targetPid>");
+            return;
+        }
+        String targetPid = args[0]; // The PID of the target JVM process
+        VirtualMachine vm = VirtualMachine.attach(targetPid);
+        String agentPath = HotswapPatcher.class.getProtectionDomain().getCodeSource().getLocation().getPath();
+        vm.loadAgent(agentPath);
+        vm.detach();
+        System.out.println("HotswapPatcher loaded successfully.");
     }
 
     public static void parseArgs(String args) {

@@ -48,6 +48,7 @@
                                     <Implementation-Version>${project.version}</Implementation-Version>
                                     <Agent-Class>org.hotswap.patcher.HotswapPatcher</Agent-Class>
                                     <Premain-Class>org.hotswap.patcher.HotswapPatcher</Premain-Class>
+                                    <Main-Class>org.hotswap.patcher.HotswapPatcher</Main-Class>
                                     <Can-Redefine-Classes>true</Can-Redefine-Classes>
                                     <Can-Retransform-Classes>true</Can-Retransform-Classes>
                                 </manifestEntries>
