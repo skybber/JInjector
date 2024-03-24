@@ -66,7 +66,8 @@ class java.util.ServiceLoader {
                 System.out.println("new method.");
             }
    }
-}```
+}
+```
 
 ### Example project
 
