@@ -12,7 +12,7 @@
 ## Overview
 
 HotswapPatcher is a Java agent designed to enable modifications of Java classes on-the-fly through patch text files, 
-using a syntax that extends from Java. This tool enables the alteration of classes within the JDK or JAR files without 
+using a syntax that extends from Java. This tool enables the modification of classes within the JDK or JAR files without 
 requiring recompilation, thus streamlining the development process. Utilizing patch files in the Javassist format, 
 HotswapPatcher allows injecting code directly into existing Java methods. 
 
