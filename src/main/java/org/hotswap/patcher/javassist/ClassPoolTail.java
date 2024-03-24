@@ -247,6 +247,9 @@ final class ClassPoolTail {
         if (org.hotswap.patcher.javassist.bytecode.ClassFile.MAJOR_VERSION < org.hotswap.patcher.javassist.bytecode.ClassFile.JAVA_9)
             return appendClassPath(new ClassClassPath());
         ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        if (cl == null) {
+            cl = ClassLoader.getSystemClassLoader();
+        }
         return appendClassPath(new LoaderClassPath(cl));
     }
 

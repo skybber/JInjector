@@ -53,21 +53,21 @@ public class HotswapPatcher {
         }
         instrumentation.addTransformer(transformer, true);
 
-        List<Class<?>> retransformClasses = new ArrayList<>();
+        List<Class<?>> retransClasses = new ArrayList<>();
         for (Patch patch: patches) {
             for (Transform transform: patch.getTransforms()) {
                 try {
                     Class<?> clazz = Class.forName(transform.getClassName());
-                    retransformClasses.add(clazz);
+                    retransClasses.add(clazz);
                 } catch (ClassNotFoundException ignore) {
                 }
             }
         }
 
-        if (!retransformClasses.isEmpty()) {
+        if (!retransClasses.isEmpty()) {
             try {
-                LOGGER.error("Retransforming {}", retransformClasses);
-                instrumentation.retransformClasses(retransformClasses.toArray(new Class[retransformClasses.size()]));
+                LOGGER.info("Retransforming {}", retransClasses);
+                instrumentation.retransformClasses(retransClasses.toArray(new Class[retransClasses.size()]));
             } catch (UnmodifiableClassException e) {
                 LOGGER.error("Retransformation failed.", e);
             }
@@ -78,13 +78,17 @@ public class HotswapPatcher {
 
     public static void main(String[] args) throws Exception {
         if (args.length < 1) {
-            System.out.println("Usage: java -jar hotswap-patcher.jar <targetPid>");
+            System.out.println("Usage: java -jar hotswap-patcher.jar <-p patch.hswp>+ <targetPid>");
             return;
         }
-        String targetPid = args[0]; // The PID of the target JVM process
+        String targetPid = args[args.length-1]; // The PID of the target JVM process
+        StringBuilder params = new StringBuilder();
+        for (int i = 0; i < args.length-1; i++) {
+            params.append(args[i] + " ");
+        }
         VirtualMachine vm = VirtualMachine.attach(targetPid);
         String agentPath = HotswapPatcher.class.getProtectionDomain().getCodeSource().getLocation().getPath();
-        vm.loadAgent(agentPath);
+        vm.loadAgent(agentPath, params.toString().trim());
         vm.detach();
         System.out.println("HotswapPatcher loaded successfully.");
     }
@@ -93,23 +97,40 @@ public class HotswapPatcher {
         if (args == null)
             return;
 
-        for (String arg : args.split(",")) {
-            String[] val = arg.split("=");
-            if (val.length != 2) {
-                LOGGER.warning("Invalid javaagent command line argument '{}'. Argument is ignored.", arg);
-            }
+        args = args.trim();
 
-            String option = val[0];
-            String optionValue = val[1];
-
-            if ("patch".equals(option)) {
-                PatchParser parser = new PatchParser();
-                Patch patch = parser.parseFile(optionValue);
-                if (patch != null) {
-                    patches.add(patch);
+        if (args.startsWith("-")) {
+            String[] argsArr = args.split("\\s+");
+            for (int i=0; i < argsArr.length-1; i+=2) {
+                String param = argsArr[i];
+                String paramValue = argsArr[i+1];
+                if ("-p".equals(param)) {
+                    PatchParser parser = new PatchParser();
+                    Patch patch = parser.parseFile(paramValue);
+                    if (patch != null) {
+                        patches.add(patch);
+                    }
                 }
-            } else {
-                LOGGER.warning("Invalid javaagent option '{}'. Argument '{}' is ignored.", option, arg);
+            }
+        } else {
+            for (String arg : args.split(",")) {
+                String[] val = arg.split("=");
+                if (val.length != 2) {
+                    LOGGER.warning("Invalid javaagent command line argument '{}'. Argument is ignored.", arg);
+                }
+
+                String option = val[0];
+                String optionValue = val[1];
+
+                if ("patch".equals(option)) {
+                    PatchParser parser = new PatchParser();
+                    Patch patch = parser.parseFile(optionValue);
+                    if (patch != null) {
+                        patches.add(patch);
+                    }
+                } else {
+                    LOGGER.warning("Invalid javaagent option '{}'. Argument '{}' is ignored.", option, arg);
+                }
             }
         }
     }

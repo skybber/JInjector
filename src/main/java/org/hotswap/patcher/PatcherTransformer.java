@@ -52,7 +52,6 @@ public class PatcherTransformer implements ClassFileTransformer {
 
         Transform classTransform = transforms.get(className);
         if (classTransform != null) {
-            LOGGER.info("Transforming class= '{}'.", className);
             ClassPool classPool = new ClassPool();
             CtClass ctClass = null;
             try {
@@ -86,6 +85,7 @@ public class PatcherTransformer implements ClassFileTransformer {
                     }
                     result = ctClass.toBytecode();
                     ctClass.detach();
+                    LOGGER.info("Class '{}' transformed.", className);
                 } catch (Exception e) {
                     LOGGER.error("Transforming class '" + className + "' failed.", e);
                 }
