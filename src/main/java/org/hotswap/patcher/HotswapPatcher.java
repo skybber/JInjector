@@ -20,7 +20,8 @@ package org.hotswap.patcher;
 
 import org.hotswap.patcher.logging.AgentLogger;
 import org.hotswap.patcher.parser.PatchParser;
-import org.hotswap.patcher.patch.ClassPatch;
+import org.hotswap.patcher.patch.Patch;
+import org.hotswap.patcher.patch.Transform;
 import org.hotswap.patcher.util.Version;
 
 import java.lang.instrument.Instrumentation;
@@ -33,41 +34,35 @@ import java.util.List;
  */
 public class HotswapPatcher {
     private static AgentLogger LOGGER = AgentLogger.getLogger(HotswapPatcher.class);
-
-    private static List<String> patches = new ArrayList<>();
+    private static List<Patch> patches = new ArrayList<>();
 
     public static void agentmain(String args, Instrumentation inst) {
         premain(args, inst);
     }
 
     public static void premain(String args, Instrumentation instrumentation) {
-        LOGGER.info("Loading Hotswap Patcher {{}} - runtime javassist class patching.", Version.version());
+        LOGGER.info("Loading Hotswap Patcher {} - runtime javassist class patching.", Version.version());
         parseArgs(args);
 
         PatcherTransformer transformer = new PatcherTransformer();
-        PatchParser parser = new PatchParser();
-        List<ClassPatch> allPatches = new ArrayList<>();
-        for (String patch: patches) {
-            List<ClassPatch> classPatches = parser.parseFile(patch);
-            if (classPatches != null) {
-                for (ClassPatch classPatch: classPatches) {
-                    LOGGER.info("Read classPatch {}", classPatch.toString());
-                    transformer.addClassPatch(classPatch);
-                    allPatches.add(classPatch);
-                }
-
+        for (Patch patch: patches) {
+            for (Transform transform: patch.getTransforms()) {
+                transformer.addTransform(transform);
             }
         }
         instrumentation.addTransformer(transformer, true);
 
         List<Class<?>> retransformClasses = new ArrayList<>();
-        for (ClassPatch classPatch: allPatches) {
-            try {
-                Class<?> clazz = Class.forName(classPatch.getClassName());
-                retransformClasses.add(clazz);
-            } catch (ClassNotFoundException ignore) {
+        for (Patch patch: patches) {
+            for (Transform transform: patch.getTransforms()) {
+                try {
+                    Class<?> clazz = Class.forName(transform.getClassName());
+                    retransformClasses.add(clazz);
+                } catch (ClassNotFoundException ignore) {
+                }
             }
         }
+
         if (!retransformClasses.isEmpty()) {
             try {
                 LOGGER.error("Retransforming {}", retransformClasses);
@@ -94,7 +89,11 @@ public class HotswapPatcher {
             String optionValue = val[1];
 
             if ("patch".equals(option)) {
-                patches.add(optionValue);
+                PatchParser parser = new PatchParser();
+                Patch patch = parser.parseFile(optionValue);
+                if (patch != null) {
+                    patches.add(patch);
+                }
             } else {
                 LOGGER.warning("Invalid javaagent option '{}'. Argument '{}' is ignored.", option, arg);
             }

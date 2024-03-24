@@ -3,7 +3,7 @@ package org.hotswap.patcher.patch;
 /**
  * The type New method patch.
  */
-public class NewMethodPatch {
+public class TransformNewMethod {
     private String addMethodPatch;
 
     public String getAddMethodPatch() {

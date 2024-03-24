@@ -1,9 +1,6 @@
 package org.hotswap.patcher.patch;
 
-/**
- * The type Method patch fragment.
- */
-public class MethodPatchFragment {
+public class TransformMethodFragment {
     public enum TransformType {
         INSERT_BEFORE,
         INSERT_AFTER,
@@ -11,26 +8,26 @@ public class MethodPatchFragment {
     }
 
     private final TransformType transformType;
-    private final String code;
+    private final String src;
 
-    public MethodPatchFragment(TransformType transformType, String code) {
+    public TransformMethodFragment(TransformType transformType, String src) {
         this.transformType = transformType;
-        this.code = code;
+        this.src = src;
     }
 
     public TransformType getTransformType() {
         return transformType;
     }
 
-    public String getCode() {
-        return code;
+    public String getSrc() {
+        return src;
     }
 
     @Override
     public String toString() {
         return "MethodPatchFragment{" +
                 "transformType=" + transformType +
-                ", code='" + code + '\'' +
+                ", code='" + src + '\'' +
                 '}';
     }
 }

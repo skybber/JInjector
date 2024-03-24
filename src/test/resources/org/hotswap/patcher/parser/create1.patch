@@ -1,0 +1,9 @@
+@Create
+class org.hotswap.patcher.CreateTest extends java.lang.Runnable {
+    public int field1;
+    public String field2;
+
+    public void run() {
+        System.out.println("CreateTest.run proceeded.");
+    }
+}

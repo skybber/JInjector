@@ -47,7 +47,7 @@ public class Lex implements TokenId {
         input = s;
         position = 0;
         maxlen = s.length();
-        lineNumber = 0;
+        lineNumber = 1;
     }
 
     public int get() {
@@ -111,7 +111,6 @@ public class Lex implements TokenId {
         if(c < 0)
             return c;
         else if(c == '\n') {
-            ++lineNumber;
             return '\n';
         }
         else if (c == '\'')
@@ -175,9 +174,6 @@ public class Lex implements TokenId {
             if (c == '\\')
                 value = readEscapeChar();
             else if (c < 0x20) {
-                if (c == '\n')
-                    ++lineNumber;
-
                 return BadToken;
             }
             else
@@ -197,8 +193,6 @@ public class Lex implements TokenId {
             c = '\r';
         else if (c == 'f')
             c = '\f';
-        else if (c == '\n')
-            ++lineNumber;
 
         return c;
     }
@@ -212,7 +206,6 @@ public class Lex implements TokenId {
                 if (c == '\\')
                     c = readEscapeChar();
                 else if (c == '\n' || c < 0) {
-                    ++lineNumber;
                     return BadToken;
                 }
 
@@ -221,9 +214,8 @@ public class Lex implements TokenId {
 
             for (;;) {
                 c = getc();
-                if (c == '\n')
-                    ++lineNumber;
-                else if (!isBlank(c))
+                if (c == '\n') {
+                } else if (!isBlank(c))
                     break;
             }
 
@@ -521,12 +513,33 @@ public class Lex implements TokenId {
 
     private int getc() {
         if (lastChar < 0)
-            if (position < maxlen)
-                return input.charAt(position++);
+            if (position < maxlen) {
+                int c = input.charAt(position++);
+                if (c == '\n')
+                    lineNumber ++;
+                return c;
+            }
             else
                 return -1;
         int c = lastChar;
         lastChar = -1;
         return c;
+    }
+
+    public int getLineNumber() {
+        return lineNumber;
+    }
+    public int getPosition() {
+        return position;
+    }
+
+    public String getInput() {
+        return input;
+    }
+
+    public void setPosition(int position) {
+        this.lookAheadTokens = null;
+        currentToken = new Token();
+        this.position = position;
     }
 }

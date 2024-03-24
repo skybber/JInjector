@@ -11,18 +11,16 @@
 
 ## Overview
 
-HotswapPatcher is a Java agent crafted to enable on-the-fly modifications of Java classes through patch files in plain text. 
-This tool allows even altering classes within the JDK or JAR files without the need for recompilation, streamlining the development process. 
-Utilizing patch files in the Javassist format, HotswapPatcher allows injecting code directly into existing Java 
-methods. 
+HotswapPatcher is a Java agent designed to enable modifications of Java classes on-the-fly through patch text files, 
+using a syntax that extends from Java. This tool enables the alteration of classes within the JDK or JAR files without 
+requiring recompilation, thus streamlining the development process. Utilizing patch files in the Javassist format, 
+HotswapPatcher allows injecting code directly into existing Java methods. 
 
 ## Features
 
-- **Dynamic Class Modification**: Modify Java classes at runtime using simple, plain text patch files.
+- **Dynamic Class Modification**: Modify Java classes at runtime using simple, plain text patch files using syntax extended from Java.
 - **No Compilation Required**: Patch files do not require compilation, allowing for rapid development cycles.
 - **Javassist Syntax Support**: Utilize the full power of Javassist's syntax for class and method modifications.
-- Just now restricted on **Pre and Post Method Injection**: Easily insert custom code before or after method execution 
-  with `insertBefore` and `insertAfter` directives.
 
 ## Usage
 
@@ -41,17 +39,34 @@ can be `insertBefore` (to inject code at the beginning of a method) or `insertAf
 #### Example Patch File
 
 ```
+@Transform(onStart)
 class java.util.ServiceLoader {
-    newLookupIterator() {
-        insertBefore {
-            System.out.println("Hello from start of method ServiceLoader.newLookupIterator!");
-        }
-        insertAfter {
-            System.out.println("Hello from end of method ServiceLoader.newLookupIterator!");
-        }
+
+    $field(firstName).rename(_firstName);
+
+    $fields.new() {
+        private String field1;
     }
-}
-```
+   
+    $method(newLookupIterator())
+        .insertBefore {
+            System.out.println("Start newLookupIterator().");
+        }
+        .insertAfter {
+            System.out.println("End newLookupIterator().");
+        };
+    
+    $method(newLookupIterator())
+        .setBody {
+            System.out.println("Hello from patcher.");
+        }
+
+    $method.new() {
+            public void someMethod() {
+                System.out.println("new method.");
+            }
+   }
+}```
 
 ### Example project
 

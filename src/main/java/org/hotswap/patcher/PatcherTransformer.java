@@ -20,10 +20,7 @@ package org.hotswap.patcher;
 
 import org.hotswap.patcher.javassist.*;
 import org.hotswap.patcher.logging.AgentLogger;
-import org.hotswap.patcher.patch.ClassPatch;
-import org.hotswap.patcher.patch.ConstructorPatch;
-import org.hotswap.patcher.patch.MethodPatch;
-import org.hotswap.patcher.patch.MethodPatchFragment;
+import org.hotswap.patcher.patch.*;
 
 import java.io.ByteArrayInputStream;
 import java.lang.instrument.ClassFileTransformer;
@@ -40,11 +37,11 @@ public class PatcherTransformer implements ClassFileTransformer {
 
     private static AgentLogger LOGGER = AgentLogger.getLogger(PatcherTransformer.class);
 
-    private Map<String, ClassPatch> patches = new HashMap<>();
+    private Map<String, Transform> transforms = new HashMap<>();
 
-    public void addClassPatch(ClassPatch classPatch) {
+    public void addTransform(Transform classPatch) {
         String resClassName = classPatch.getClassName().replaceAll("\\.", "/");
-        patches.put(resClassName, classPatch);
+        transforms.put(resClassName, classPatch);
     }
 
     @Override
@@ -53,8 +50,8 @@ public class PatcherTransformer implements ClassFileTransformer {
 
         byte[] result = bytes;
 
-        ClassPatch classPatch = patches.get(className);
-        if (classPatch != null) {
+        Transform classTransform = transforms.get(className);
+        if (classTransform != null) {
             LOGGER.info("Transforming class= '{}'.", className);
             ClassPool classPool = new ClassPool();
             CtClass ctClass = null;
@@ -67,34 +64,30 @@ public class PatcherTransformer implements ClassFileTransformer {
             }
             if (ctClass != null) {
                 try {
-                    for (List<ConstructorPatch> constructorPatchList : classPatch.getConstructorPatches().values()) {
-                        for (ConstructorPatch constructorPatch : constructorPatchList) {
-                            if (constructorPatch.getPatchFragments().isEmpty()) {
-                                continue;
-                            }
-                            if (constructorPatch.isAllMethods()) {
-                                applyAllConstructorPatch(classPool, ctClass, constructorPatch);
-                            } else {
-                                applyConstructorPatch(classPool, ctClass, constructorPatch);
-                            }
-                        }
+                    for (NewField newField: classTransform.getNewFields()) {
+                        ctClass.addField(CtField.make(newField.getSrc(), ctClass));
                     }
-                    for (List<MethodPatch> methodPatchList : classPatch.getMethodPatches().values()) {
-                        for (MethodPatch methodPatch : methodPatchList) {
-                            if (methodPatch.getPatchFragments().isEmpty()) {
-                                continue;
-                            }
-                            if (methodPatch.isAllMethods()) {
-                                applyAllMethodPatch(classPool, ctClass, methodPatch);
-                            } else {
-                                applyMethodPatch(classPool, ctClass, methodPatch);
-                            }
+                    for (NewMethod newConstructor: classTransform.getNewConstructors()) {
+                       ctClass.addConstructor(CtNewConstructor.make(newConstructor.getSrc(), ctClass));
+                    }
+                    for (NewMethod newMethod: classTransform.getNewMethods()) {
+                        ctClass.addMethod(CtNewMethod.make(newMethod.getSrc(), ctClass));
+                    }
+                    for (TransformField transfField: classTransform.getTransformFields().values()) {
+                        applyFieldTransformer(classPool, ctClass, transfField);
+                    }
+                    for (TransformConstructor transfConstructor : classTransform.getTransformConstructors().values()) {
+                        applyConstructorTransformer(classPool, ctClass, transfConstructor);
+                    }
+                    for (List<TransformMethod> tranfsMethods : classTransform.getTransformMethods().values()) {
+                        for (TransformMethod transfMethod : tranfsMethods) {
+                            applyMethodTransformer(classPool, ctClass, transfMethod);
                         }
                     }
                     result = ctClass.toBytecode();
                     ctClass.detach();
                 } catch (Exception e) {
-                    LOGGER.error("Patching class '" + className + "' failed.", e);
+                    LOGGER.error("Transforming class '" + className + "' failed.", e);
                 }
             }
         }
@@ -102,50 +95,79 @@ public class PatcherTransformer implements ClassFileTransformer {
         return result;
     }
 
-    private void applyAllConstructorPatch(ClassPool classPool, CtClass ctClass, ConstructorPatch constructorPatch) {
-        // TODO:
+
+    private void applyFieldTransformer(ClassPool classPool, CtClass ctClass, TransformField transfField) throws NotFoundException {
+        CtField ctField = ctClass.getDeclaredField(transfField.getFieldName());
+        switch (transfField.getFieldTransformType()) {
+            case RENAME: {
+                ctField.setName(transfField.getRenameTo());
+                break;
+            }
+            case REMOVE: {
+                ctClass.removeField(ctField);
+                break;
+            }
+        }
     }
 
-    private void applyAllMethodPatch(ClassPool classPool, CtClass ctClass, MethodPatch methodPatch) {
-        // TODO:
+    private void applyConstructorTransformer(ClassPool classPool, CtClass ctClass, TransformConstructor tranfsConstructor) throws NotFoundException, CannotCompileException {
+        if (tranfsConstructor.isAllMethods()) {
+            CtConstructor[] declaredConstructors = ctClass.getDeclaredConstructors();
+            for (CtConstructor ctConstructor: declaredConstructors) {
+                doApplyConstructorTransformer(ctConstructor, tranfsConstructor);
+            }
+        } else {
+            CtClass[] params = classNamesToCtClasses(classPool, tranfsConstructor.getParamClasses());
+            CtConstructor ctConstructor = ctClass.getDeclaredConstructor(params);
+            doApplyConstructorTransformer(ctConstructor, tranfsConstructor);
+        }
     }
 
-    private void applyConstructorPatch(ClassPool classPool, CtClass ctClass, ConstructorPatch constructorPatch) throws NotFoundException, CannotCompileException {
-        CtClass[] params = classNamesToCtClasses(classPool, constructorPatch.getParamClasses());
-        CtConstructor ctConstructor = ctClass.getDeclaredConstructor(params);
-        for (MethodPatchFragment patchFragment: constructorPatch.getPatchFragments()) {
+    private void doApplyConstructorTransformer(CtConstructor ctConstructor, TransformConstructor tranfsConstructor) throws CannotCompileException {
+        for (TransformMethodFragment patchFragment : tranfsConstructor.getPatchFragments()) {
             switch (patchFragment.getTransformType()) {
                 case INSERT_BEFORE: {
-                    ctConstructor.insertBefore(patchFragment.getCode());
+                    ctConstructor.insertBefore(patchFragment.getSrc());
                 }
                 break;
                 case INSERT_AFTER: {
-                    ctConstructor.insertAfter(patchFragment.getCode());
+                    ctConstructor.insertAfter(patchFragment.getSrc());
                 }
                 break;
                 case SET_BODY: {
-                    ctConstructor.setBody(patchFragment.getCode());
+                    ctConstructor.setBody(patchFragment.getSrc());
                 }
                 break;
             }
         }
     }
 
-    private void applyMethodPatch(ClassPool classPool, CtClass ctClass, MethodPatch methodPatch) throws NotFoundException, CannotCompileException {
-        CtClass[] params = classNamesToCtClasses(classPool, methodPatch.getParamClasses());
-        CtMethod ctMethod = ctClass.getDeclaredMethod(methodPatch.getMethodName(), params);
-        for (MethodPatchFragment patchFragment: methodPatch.getPatchFragments()) {
+    private void applyMethodTransformer(ClassPool classPool, CtClass ctClass, TransformMethod transfMethod) throws NotFoundException, CannotCompileException {
+        if (transfMethod.isAllMethods()) {
+            CtMethod[] declaredMethods = ctClass.getDeclaredMethods(transfMethod.getMethodName());
+            for (CtMethod ctMethod: declaredMethods) {
+                doApplyMethodTransformer(ctMethod, transfMethod);
+            }
+        } else {
+            CtClass[] params = classNamesToCtClasses(classPool, transfMethod.getParamClasses());
+            CtMethod ctMethod = ctClass.getDeclaredMethod(transfMethod.getMethodName(), params);
+            doApplyMethodTransformer(ctMethod, transfMethod);
+        }
+    }
+
+    private void doApplyMethodTransformer(CtMethod ctMethod, TransformMethod transfMethod) throws CannotCompileException {
+        for (TransformMethodFragment patchFragment : transfMethod.getPatchFragments()) {
             switch (patchFragment.getTransformType()) {
                 case INSERT_BEFORE: {
-                    ctMethod.insertBefore(patchFragment.getCode());
+                    ctMethod.insertBefore(patchFragment.getSrc());
                 }
                 break;
                 case INSERT_AFTER: {
-                    ctMethod.insertAfter(patchFragment.getCode());
+                    ctMethod.insertAfter(patchFragment.getSrc());
                 }
                 break;
                 case SET_BODY: {
-                    ctMethod.setBody(patchFragment.getCode());
+                    ctMethod.setBody(patchFragment.getSrc());
                 }
                 break;
             }
