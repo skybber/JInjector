@@ -54,7 +54,7 @@ class java.util.ServiceLoader {
         }
         .insertAfter {
             System.out.println("End newLookupIterator().");
-        };
+        }
     
     $method(newLookupIterator())
         .setBody {
