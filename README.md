@@ -32,9 +32,7 @@ To use HotswapPatcher, specify it as a Java agent upon starting your JVM:
 
 ### Patch File Format
 
-Patch files should be in plain text, detailing the modifications to be applied. Each file specifies the target class name, 
-method names for modification, and the location within those methods where the code should be injected. The locations 
-can be `insertBefore` (to inject code at the beginning of a method) or `insertAfter` (to inject code at the end of a method).
+Patch files are in text format and contain details of the changes to be applied to the running program. Each file lists, for each tranformed class, the names of the fields, constructors, and methods to be modified and the location in those methods where the code should be inserted. The location can be `insertBefore` (to insert code at the beginning of the method), `insertAfter` (to insert code at the end of the method), or `setBody` to replace the entire method. It is also possible to create new fields, constructors or methods.
 
 #### Example Patch File
 
