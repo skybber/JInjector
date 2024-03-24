@@ -21,19 +21,19 @@ public class PatchParserOKTest {
 
     @Test
     public void transform1Test() {
-        Patch patch = createPatch("transform1.patch");
+        Patch patch = createPatch("transform1.hswp");
         assertNotNull(patch);
     }
 
     @Test
     public void create1Test() {
-        Patch patch = createPatch("create1.patch");
+        Patch patch = createPatch("create1.hswp");
         assertNotNull(patch);
     }
 
     @Test
     public void complex1Test() {
-        Patch patch = createPatch("complex1.patch");
+        Patch patch = createPatch("complex1.hswp");
         assertNotNull(patch);
     }
 

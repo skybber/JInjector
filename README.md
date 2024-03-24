@@ -27,7 +27,7 @@ HotswapPatcher allows injecting code directly into existing Java methods.
 To use HotswapPatcher, specify it as a Java agent upon starting your JVM:
 
 ```
--javaagent:hotswap-patcher=patch=patch_file1.patch,patch=patch_file2.patch
+-javaagent:hotswap-patcher=patch=patch_file1.hswp,patch=patch_file2.hswp
 ```
 
 ### Patch File Format
