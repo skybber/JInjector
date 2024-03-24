@@ -44,7 +44,7 @@ class java.util.ServiceLoader {
 
     $field(firstName).rename(_firstName);
 
-    $fields.new() {
+    $field.new() {
         private String field1;
     }
    
