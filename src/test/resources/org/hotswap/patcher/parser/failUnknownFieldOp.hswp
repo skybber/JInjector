@@ -1,0 +1,4 @@
+@Transform(onStart)
+class TransformTest {
+    $field(field1).renam(_field1);
+}

@@ -288,6 +288,7 @@ public class PatchParser {
 
     private String readNewFieldSrc() throws PatcherSyntaxError {
         int startPos = lex.getPosition();
+        int startLineNumber = lex.getLineNumber();
         while (true) {
             int tok = lex.lookAhead();
             if (tok < 0) {
@@ -295,14 +296,14 @@ public class PatchParser {
             }
             if (tok == '}') {
                 String src = lex.getInput().substring(startPos, lex.getPosition()-1);
-                parseNewFieldByJvst(src);
+                parseNewFieldByJvst(startLineNumber, src);
                 return src;
             }
             lex.get();
         }
     }
 
-    private void parseNewFieldByJvst(String src) throws PatcherSyntaxError {
+    private void parseNewFieldByJvst(int startLineNumber, String src) throws PatcherSyntaxError {
         Lex sourceLex = new Lex(src);
         Parser p = new Parser(sourceLex);
         try {
@@ -313,7 +314,7 @@ public class PatchParser {
                 }
             }
         } catch (CompileError e) {
-            int lineNumber = lex.getLineNumber() + sourceLex.getLineNumber();
+            int lineNumber = (startLineNumber - 1) + sourceLex.getLineNumber();
             throw new PatcherSyntaxError("Code parse error: " + e.getMessage(), lex, lineNumber);
         }
     }
@@ -539,7 +540,7 @@ public class PatchParser {
     private void readExpectedKeyword(int expectedKw) throws PatcherSyntaxError {
         int tok = lex.get();
         if (tok != expectedKw) {
-            throw new PatcherSyntaxError("'" + getTokenAsString(expectedKw) + "' keyword expected, but '" + tok + "' found.", lex);
+            throw new PatcherSyntaxError("'" + getTokenAsString(expectedKw) + "' keyword expected, but '" + getTokenAsString(tok) + "' found.", lex);
         }
     }
 

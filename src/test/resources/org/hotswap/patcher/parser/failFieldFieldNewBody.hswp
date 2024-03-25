@@ -1,0 +1,7 @@
+@Transform(onStart)
+class TransformTest {
+    $field.new() {
+            private String newField1;
+            private String ;
+    }
+}
