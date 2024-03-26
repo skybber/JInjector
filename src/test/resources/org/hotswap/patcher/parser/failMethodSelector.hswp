@@ -1,0 +1,8 @@
+@Transform
+class TransformTest {
+    $method(fail)
+        .insertBefore {
+            System.out.println("method1 start");
+        }
+
+}

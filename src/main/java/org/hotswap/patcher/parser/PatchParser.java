@@ -267,17 +267,23 @@ public class PatchParser {
             result = new ArrayList<>();
             if (lex.lookAhead() != ')') {
                 while (true) {
-                    String paramClassName = readExpectClassName();
+                    String paramType;
+                    if (isBuiltinType(lex.lookAhead())) {
+                        paramType = getTokenAsString(lex.get());
+                    } else {
+                        paramType = readExpectClassName();
+                    }
+
                     if (lex.lookAhead() == '[') {
                         lex.get();
                         readExpectChar(']');
                     }
-                    result.add(paramClassName);
+                    result.add(paramType);
                     if (lex.lookAhead() == ')') {
                         lex.get();
                         break;
                     }
-                    readExpectChar(',');
+                    readExpectCharWithExpectSet(',', "')' or ','");
                 }
             } else {
                 lex.get();
@@ -510,6 +516,10 @@ public class PatchParser {
         throw new PatcherSyntaxError("Character '" + expected + "' expected, but '" + getTokenAsString(found) + "' found.", lex);
     }
 
+    private void throwExpectChars(String expectedChars, int found) throws PatcherSyntaxError {
+        throw new PatcherSyntaxError("Characters " + expectedChars + " expected, but '" + getTokenAsString(found) + "' found.", lex);
+    }
+
     private void throwFieldDeclExpected() throws PatcherSyntaxError {
         throw new PatcherSyntaxError("Field definition expected.", lex);
     }
@@ -526,6 +536,13 @@ public class PatchParser {
         int tok = lex.get();
         if (tok != expected) {
             throwExpectChar(expected, tok);
+        }
+    }
+
+    private void readExpectCharWithExpectSet(char expected, String expectedChars) throws PatcherSyntaxError {
+        int tok = lex.get();
+        if (tok != expected) {
+            throwExpectChars(expectedChars, tok);
         }
     }
 
@@ -565,5 +582,10 @@ public class PatchParser {
         if (lex.lookAhead() <= 0) {
             throw new PatcherSyntaxError("Reached unexpected end of source.", lex);
         }
+    }
+
+    public static boolean isBuiltinType(int t) {
+        return (t == TokenId.BOOLEAN || t == TokenId.BYTE || t == TokenId.CHAR || t == TokenId.SHORT
+            || t == TokenId.INT || t == TokenId.LONG || t == TokenId.FLOAT || t == TokenId.DOUBLE);
     }
 }

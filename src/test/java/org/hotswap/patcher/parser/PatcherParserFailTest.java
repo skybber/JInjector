@@ -49,4 +49,16 @@ public class PatcherParserFailTest
 		assertNull(patch);
 	}
 
+	@Test
+	public void failFieldMethodSelectorTest() {
+		Patch patch = createPatch("failMethodSelector.hswp");
+		assertNull(patch);
+	}
+
+	@Test
+	public void failFieldMethodSelectorTypeTest() {
+		Patch patch = createPatch("failMethodSelectorType.hswp");
+		assertNull(patch);
+	}
+
 }

@@ -1,0 +1,9 @@
+@Transform
+class TransformTest {
+    // wrong param name "s"
+    $method(method1(int, String s))
+        .insertBefore {
+            System.out.println("method1 start");
+        }
+
+}
