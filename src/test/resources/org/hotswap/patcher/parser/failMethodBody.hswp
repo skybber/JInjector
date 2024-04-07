@@ -1,0 +1,9 @@
+@Transform
+class TransformTest {
+    $method(method1(int, String))
+        .insertBefore {
+            // Syntax err in body
+            System.out.println(;
+        }
+
+}

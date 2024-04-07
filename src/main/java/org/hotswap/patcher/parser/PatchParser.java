@@ -327,6 +327,7 @@ public class PatchParser {
 
     private String readNewMethodSrc(boolean isConstructor) throws PatcherSyntaxError {
         int startPos = lex.getPosition();
+        int startLineNumber = lex.getLineNumber();
         int parCount = 1;
         while (true) {
             int tok = lex.lookAhead();
@@ -339,7 +340,7 @@ public class PatchParser {
                 parCount --;
                 if (parCount <= 0) {
                     String src = lex.getInput().substring(startPos, lex.getPosition()-1);
-                    parseNewMethodSrcByJvst(isConstructor, src);
+                    parseNewMethodSrcByJvst(startLineNumber, isConstructor, src);
                     return src;
                 }
             }
@@ -347,7 +348,7 @@ public class PatchParser {
         }
     }
 
-    private void parseNewMethodSrcByJvst(boolean isConstructor, String src) throws PatcherSyntaxError {
+    private void parseNewMethodSrcByJvst(int startLineNumber, boolean isConstructor, String src) throws PatcherSyntaxError {
         Lex sourceLex = new Lex(src);
         Parser p = new Parser(sourceLex);
         try {
@@ -368,7 +369,7 @@ public class PatchParser {
                 }
             }
         } catch (CompileError e) {
-            int lineNumber = lex.getLineNumber() + sourceLex.getLineNumber();
+            int lineNumber = (startLineNumber-1) + sourceLex.getLineNumber();
             throw new PatcherSyntaxError("Code parse error: " + e.getMessage(), lex, lineNumber);
         }
     }
@@ -393,6 +394,7 @@ public class PatchParser {
 
     private String readTransformMethodFragmentSrc() throws PatcherSyntaxError {
         int startPos = lex.getPosition();
+        int startLineNumber = lex.getLineNumber();
         int parCount = 1;
         while (true) {
             int tok = lex.lookAhead();
@@ -405,7 +407,7 @@ public class PatchParser {
                 parCount --;
                 if (parCount <= 0) {
                     String src = lex.getInput().substring(startPos, lex.getPosition()-1);
-                    parseTransformMethodFragmentByJvst(src);
+                    parseTransformMethodFragmentByJvst(startLineNumber, src);
                     return src;
                 }
             }
@@ -413,7 +415,7 @@ public class PatchParser {
         }
     }
 
-    private void parseTransformMethodFragmentByJvst(String src) throws PatcherSyntaxError {
+    private void parseTransformMethodFragmentByJvst(int startLineNumber, String src) throws PatcherSyntaxError {
         Lex fragmentLex = new Lex(src);
         Parser p = new Parser(fragmentLex);
         try {
@@ -421,7 +423,7 @@ public class PatchParser {
                 Stmnt s = p.parseStatement(new SymbolTable());
             }
         } catch (CompileError e) {
-            int lineNumber = lex.getLineNumber() + fragmentLex.getLineNumber();
+            int lineNumber = (startLineNumber-1) + fragmentLex.getLineNumber();
             throw new PatcherSyntaxError("Code fragment parse error: " + e.getMessage(), lex, lineNumber);
         }
     }
@@ -470,7 +472,7 @@ public class PatchParser {
                 }
                 startPos = endPos;
             } catch (CompileError e) {
-                int lineNumber = lex.getLineNumber() + classElemLex.getLineNumber() + linesProcessed;
+                int lineNumber = (lex.getLineNumber()-1) + (classElemLex.getLineNumber()-1) + linesProcessed;
                 throw new PatcherSyntaxError("Code fragment parse error: " + e.getMessage(), lex, lineNumber);
             }
         } while (classElemLex.lookAhead() != '}');

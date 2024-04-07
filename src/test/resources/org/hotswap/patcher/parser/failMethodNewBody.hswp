@@ -1,0 +1,12 @@
+@Transform
+class TransformTest {
+    $method.new() {
+        public void newMethod1() {
+            System.out.println("New method!");
+        }
+        public void newMethod2() {
+            // Syntax err
+            System.out.println(;
+        }
+   }
+}

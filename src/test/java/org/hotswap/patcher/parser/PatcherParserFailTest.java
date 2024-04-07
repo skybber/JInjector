@@ -45,7 +45,7 @@ public class PatcherParserFailTest
 
 	@Test
 	public void failFieldFieldNewBodyTest() {
-		Patch patch = createPatch("failFieldFieldNewBody.hswp");
+		Patch patch = createPatch("failFieldNewBody.hswp");
 		assertNull(patch);
 	}
 
@@ -58,6 +58,30 @@ public class PatcherParserFailTest
 	@Test
 	public void failFieldMethodSelectorTypeTest() {
 		Patch patch = createPatch("failMethodSelectorType.hswp");
+		assertNull(patch);
+	}
+
+	@Test
+	public void failMethodBodyTest() {
+		Patch patch = createPatch("failMethodBody.hswp");
+		assertNull(patch);
+	}
+
+	@Test
+	public void failMethodNewBodyTest() {
+		Patch patch = createPatch("failMethodNewBody.hswp");
+		assertNull(patch);
+	}
+
+	@Test
+	public void failCreateClass() {
+		Patch patch = createPatch("failCreateClass.hswp");
+		assertNull(patch);
+	}
+
+	@Test
+	public void failCreateBody() {
+		Patch patch = createPatch("failCreateBody.hswp");
 		assertNull(patch);
 	}
 
