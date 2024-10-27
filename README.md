@@ -1,4 +1,4 @@
-# JInjector
+# jinjector
 
 <p align="left">
     <a href="https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html">
@@ -12,8 +12,8 @@
 ## Overview
 
 JInjector is a Java tool that lets you change Java classes on-the-go using easy-to-edit text files. It works with classes 
-in the JDK or JAR files without needing to recompile code, making development faster and simpler. By using patch files 
-in a Java-like format, JInjector allows you to add or change code directly in existing Java methods.
+in the JDK or JAR files without needing to recompile code. By using patch files in a Java-like format, jinjector allows 
+you to add or change code directly in existing Java methods.
 
 ## Features
 
@@ -23,7 +23,7 @@ in a Java-like format, JInjector allows you to add or change code directly in ex
 
 ## Usage
 
-To get started, add JInjector as a Java agent when launching your JVM:
+To get started, add jinjector as a Java agent when launching your JVM:
 
 ```
 -javaagent:jinjector=patch=patch_file1.hswp,patch=patch_file2.hswp
@@ -72,22 +72,22 @@ Available at https://github.com/skybber/ServiceLoaderExample
 
 ## Installation
 
-1. **Download** the JInjector agent from the latest releases.
+1. **Download** the jinjector agent from the latest releases.
 2. **Include** the agent in your JVM startup command using the `-javaagent` option, as demonstrated in the Usage section.
 
 ## Building from Source
 
-If you prefer to build JInjector from the source, follow these steps:
+If you prefer to build jinjector from the source, follow these steps:
 
-1. Clone the repository: `git clone https://github.com/skybber/JInjector`
-2. Navigate into the project directory: `cd JInjector`
+1. Clone the repository: `git clone https://github.com/skybber/jinjector`
+2. Navigate into the project directory: `cd jinjector`
 3. Build the project (requires Maven): `mvn package`
 
-The build process will generate a `hotswap-patcher.jar` in the `target` directory.
+The build process will generate a `jinjector.jar` in the `target` directory.
 
 ## Contributing
 
-Contributions to JInjector are welcome! Whether it's bug reports, feature suggestions, or direct code contributions, all forms of feedback and help are appreciated.
+Contributions to jinjector are welcome! Whether it's bug reports, feature suggestions, or direct code contributions, all forms of feedback and help are appreciated.
 
 1. **Fork** the repository on GitHub.
 2. **Create** your feature branch: `git checkout -b my-new-feature`
