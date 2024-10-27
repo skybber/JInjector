@@ -1,0 +1,13 @@
+@Create
+class org.hotswap.jinjector.CreateTest extends java.lang.Runnable {
+    public int field1;
+    public void println() {
+        System.out.println("CreateTest.run proceeded.");
+    }
+    // Syntax error
+    public String
+
+    public void run() {
+        System.out.println("CreateTest.run proceeded.");
+    }
+}

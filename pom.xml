@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.hotswapagent</groupId>
-    <artifactId>hotswap-patcher</artifactId>
+    <artifactId>jinjector</artifactId>
     <version>0.1-SNAPSHOT</version>
 
     <packaging>jar</packaging>
@@ -40,15 +40,15 @@
                             <descriptors>
                                 <descriptor>assembly/agent/jar.xml</descriptor>
                             </descriptors>
-                            <finalName>hotswap-patcher</finalName>
+                            <finalName>jinjector</finalName>
                             <appendAssemblyId>false</appendAssemblyId>
                             <archive>
                                 <manifestEntries>
                                     <Implementation-Title>${project.build.finalName}</Implementation-Title>
                                     <Implementation-Version>${project.version}</Implementation-Version>
-                                    <Agent-Class>org.hotswap.patcher.HotswapPatcher</Agent-Class>
-                                    <Premain-Class>org.hotswap.patcher.HotswapPatcher</Premain-Class>
-                                    <Main-Class>org.hotswap.patcher.HotswapPatcher</Main-Class>
+                                    <Agent-Class>org.hotswap.jinjector.JInjector</Agent-Class>
+                                    <Premain-Class>org.hotswap.jinjector.JInjector</Premain-Class>
+                                    <Main-Class>org.hotswap.jinjector.JInjector</Main-Class>
                                     <Can-Redefine-Classes>true</Can-Redefine-Classes>
                                     <Can-Retransform-Classes>true</Can-Retransform-Classes>
                                 </manifestEntries>
