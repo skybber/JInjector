@@ -11,20 +11,19 @@
 
 ## Overview
 
-JInjector is a Java agent designed to enable modifications of Java classes on-the-fly through patch text files, 
-using a syntax that extends from Java. This tool enables the modification of classes within the JDK or JAR files without 
-requiring recompilation, thus streamlining the development process. Utilizing patch files in the Javassist format, 
-JInjector allows injecting code directly into existing Java methods. 
+JInjector is a Java tool that lets you change Java classes on-the-go using easy-to-edit text files. It works with classes 
+in the JDK or JAR files without needing to recompile code, making development faster and simpler. By using patch files 
+in a Java-like format, JInjector allows you to add or change code directly in existing Java methods.
 
 ## Features
 
-- **Dynamic Class Modification**: Modify Java classes at runtime using simple, plain text patch files using syntax extended from Java.
-- **No Compilation Required**: Patch files do not require compilation, allowing for rapid development cycles.
-- **Javassist Syntax Support**: Utilize the full power of Javassist's syntax for class and method modifications.
+- **Real-Time Class Modification**: Update Java classes in runtime with simple text patch files.
+- **No Need for Compilation**: Patch files do not require compilation, allowing for rapid development cycles. 
+- **Javassist-Compatible Syntax**: Leverage the powerful Javassist syntax to modify classes and methods.
 
 ## Usage
 
-To use JInjector, specify it as a Java agent upon starting your JVM:
+To get started, add JInjector as a Java agent when launching your JVM:
 
 ```
 -javaagent:jinjector=patch=patch_file1.hswp,patch=patch_file2.hswp
